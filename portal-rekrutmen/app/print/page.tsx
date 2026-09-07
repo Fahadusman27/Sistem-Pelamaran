@@ -6,6 +6,7 @@
 
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useBiodataStore }    from "@/store/useBiodataStore";
 import PrintLayoutPage1       from "@/components/print/PrintLayoutPage1";
 import PrintLayoutPage2       from "@/components/print/PrintLayoutPage2";
@@ -35,7 +36,15 @@ export default function PrintPage() {
     jawabanEsai,
     minatDepartemen,
     persetujuan,
+    goToStep,
   } = useBiodataStore();
+
+  const router = useRouter();
+
+  const handleBackToForm = () => {
+    goToStep(1);
+    router.push("/apply");
+  };
 
   const handlePrint = () => window.print();
 
@@ -82,9 +91,13 @@ export default function PrintPage() {
             <span className="text-gray-500 ml-1">halaman</span>
           </div>
 
-          <a href="/apply" className="px-4 py-2 rounded-lg text-sm border border-white/20 text-gray-300 hover:text-white hover:border-white/50 transition-colors">
+          <button
+            type="button"
+            onClick={handleBackToForm}
+            className="px-4 py-2 rounded-lg text-sm border border-white/20 text-gray-300 hover:text-white hover:border-white/50 transition-colors"
+          >
             ← Form
-          </a>
+          </button>
 
           <button
             id="btn-print"
@@ -133,7 +146,7 @@ export default function PrintPage() {
 
         {/* ── Halaman 3 ── */}
         <div className="flex flex-col items-center gap-1 w-full">
-          <PageLabel n={3} label="Pertanyaan Esai Q1–Q12" />
+          <PageLabel n={3} label="Pertanyaan Esai (Q1–Q23)" />
           <PrintLayoutPage3
             jawabanEsai={jawabanEsai}
             noForm={FORM_NO} noRevisi={REVISI_NO}
@@ -142,9 +155,8 @@ export default function PrintPage() {
 
         {/* ── Halaman 4 ── */}
         <div className="flex flex-col items-center gap-1 w-full">
-          <PageLabel n={4} label="Esai Q13–Q23 + Minat Bekerja + Pernyataan" />
+          <PageLabel n={4} label="Minat Bekerja + Pernyataan & Evaluasi HRD" />
           <PrintLayoutPage4
-            jawabanEsai={jawabanEsai}
             minatDepartemen={minatDepartemen}
             persetujuan={persetujuan}
             signatureBase64={signatureBase64}

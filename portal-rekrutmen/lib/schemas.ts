@@ -39,7 +39,7 @@ export const pendidikanFormalSchema = z.object({
   jurusan:       z.string().min(2, "Jurusan wajib diisi"),
   tahunMasuk:    z.string().min(4, "Tahun masuk wajib diisi"),
   tahunLulus:    z.string().min(4, "Tahun lulus wajib diisi"),
-  nilaiAkhir:    z.string().optional(),
+  nilaiAkhir:    z.string(),
 });
 
 export const pendidikanNonFormalSchema = z.object({
@@ -77,33 +77,30 @@ export const pengalamanKerjaSchema = z.object({
   deskripsiTugas: z.string().min(20, "Deskripsi tugas minimal 20 karakter"),
 });
 
-const esaiMin = (label: string) =>
-  z.string().min(50, `${label} minimal 50 karakter`);
-
 export const jawabanEsaiSchema = z.object({
-  q1_motivasiMelamar:           esaiMin("Motivasi melamar"),
-  q2_kelebihanDiri:             esaiMin("Kelebihan diri"),
-  q3_kelemahanDiri:             esaiMin("Kelemahan diri"),
-  q4_pencapaianTerbesar:        esaiMin("Pencapaian terbesar"),
-  q5_rencanaTahunDepan:         esaiMin("Rencana tahun depan"),
-  q6_keahlianTeknis:            esaiMin("Keahlian teknis"),
-  q7_penguasaanSoftware:        esaiMin("Penguasaan software"),
-  q8_kemampuanBahasa:           esaiMin("Kemampuan bahasa"),
-  q9_pengalamanKepemimpinan:    esaiMin("Pengalaman kepemimpinan"),
-  q10_kemampuanKerjaTim:        esaiMin("Kemampuan kerja tim"),
-  q11_penangananKonflik:        esaiMin("Penanganan konflik"),
-  q12_situasiTekananKerja:      esaiMin("Situasi tekanan kerja"),
-  q13_keputusanSulit:           esaiMin("Keputusan sulit"),
-  q14_inovasiPerbaikanProses:   esaiMin("Inovasi & perbaikan proses"),
-  q15_adaptasiPerubahan:        esaiMin("Adaptasi perubahan"),
-  q16_kontribusiUntukPerusahaan:esaiMin("Kontribusi untuk perusahaan"),
-  q17_tujuanKarirLima:          esaiMin("Tujuan karir 5 tahun"),
-  q18_alasanCocokPosisi:        esaiMin("Alasan cocok posisi"),
-  q19_pengetahuanTentangPerusahaan: esaiMin("Pengetahuan tentang perusahaan"),
-  q20_nilaiYangDipegang:        esaiMin("Nilai yang dipegang"),
-  q21_pengalamanProjectTerbesar:esaiMin("Pengalaman project terbesar"),
-  q22_caraBelajarHalBaru:       esaiMin("Cara belajar hal baru"),
-  q23_pertanyaanUntukPerusahaan:z.string().default(""),
+  q1_motivasiMelamar:           z.string(),
+  q2_kelebihanDiri:             z.string(),
+  q3_kelemahanDiri:             z.string(),
+  q4_pencapaianTerbesar:        z.string(),
+  q5_rencanaTahunDepan:         z.string(),
+  q6_keahlianTeknis:            z.string(),
+  q7_penguasaanSoftware:        z.string(),
+  q8_kemampuanBahasa:           z.string(),
+  q9_pengalamanKepemimpinan:    z.string(),
+  q10_kemampuanKerjaTim:        z.string(),
+  q11_penangananKonflik:        z.string(),
+  q12_situasiTekananKerja:      z.string(),
+  q13_keputusanSulit:           z.string(),
+  q14_inovasiPerbaikanProses:   z.string(),
+  q15_adaptasiPerubahan:        z.string(),
+  q16_kontribusiUntukPerusahaan:z.string(),
+  q17_tujuanKarirLima:          z.string(),
+  q18_alasanCocokPosisi:        z.string(),
+  q19_pengetahuanTentangPerusahaan: z.string(),
+  q20_nilaiYangDipegang:        z.string(),
+  q21_pengalamanProjectTerbesar:z.string(),
+  q22_caraBelajarHalBaru:       z.string(),
+  q23_pertanyaanUntukPerusahaan:z.string(),
 });
 
 export type JawabanEsaiFormData = z.infer<typeof jawabanEsaiSchema>;

@@ -128,6 +128,16 @@ export interface Persetujuan {
   tanggalPersetujuan: string;
 }
 
+export interface SubmittedApplication {
+  id?: string;
+  applicantName: string;
+  email: string;
+  department: string;
+  status: "Terkirim" | "Gagal" | "Reject" | "Approve";
+  pdfUrl?: string;
+  submittedAt?: string;
+}
+
 // --- State & Actions ---------------------------------------------------------
 
 export interface BiodataState {
@@ -142,6 +152,7 @@ export interface BiodataState {
   jawabanEsai: JawabanEsai;
   minatDepartemen: MinatDepartemen;
   persetujuan: Persetujuan;
+  submittedApplication: SubmittedApplication | null;
 }
 
 export interface BiodataActions {
@@ -166,6 +177,7 @@ export interface BiodataActions {
   setJawabanEsai: (data: Partial<JawabanEsai>) => void;
   setMinatDepartemen: (data: Partial<MinatDepartemen>) => void;
   setPersetujuan: (data: Partial<Persetujuan>) => void;
+  setSubmittedApplication: (app: SubmittedApplication | null) => void;
   resetForm: () => void;
 }
 
@@ -208,6 +220,7 @@ const INITIAL_STATE: BiodataState = {
     menyetujuiGajiStandar: null, menyetujuiSyaratKetentuan: false,
     tandaTanganDigital: "", tanggalPersetujuan: "",
   },
+  submittedApplication: null,
 };
 
 // --- Store -------------------------------------------------------------------
@@ -269,6 +282,7 @@ export const useBiodataStore = create<BiodataStore>()(
               ? (data.tandaTanganDigital || null)
               : s.signatureBase64,
         })),
+      setSubmittedApplication: (app) => set({ submittedApplication: app }),
       resetForm: () => set(INITIAL_STATE),
     }),
     {

@@ -1,6 +1,6 @@
-﻿"use client";
+"use client";
 
-import { useMemo } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useBiodataStore } from "@/store/useBiodataStore";
 import Step1DataPribadi from "./_steps/Step1DataPribadi";
@@ -66,7 +66,7 @@ function ProgressBar({ currentStep }: { currentStep: number }) {
 }
 
 export default function ApplyPage() {
-  const { currentStep, nextStep, prevStep, setMinatDepartemen, setPersetujuan } = useBiodataStore();
+  const { currentStep, nextStep, prevStep, setMinatDepartemen, setPersetujuan, minatDepartemen } = useBiodataStore();
 
   const router = useRouter();
 
@@ -111,7 +111,7 @@ export default function ApplyPage() {
         <header className="text-center mb-10">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-violet-500/30 bg-violet-500/10 text-violet-400 text-xs font-semibold mb-4 tracking-wide uppercase">
             <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
-            Portal Rekrutmen � Formulir Pendaftaran
+            Portal Rekrutmen – Formulir Pendaftaran
           </div>
           <h1 className="text-3xl sm:text-4xl font-extrabold bg-gradient-to-br from-white via-violet-200 to-indigo-300 bg-clip-text text-transparent leading-tight">
             Formulir Lamaran Kerja
@@ -129,11 +129,35 @@ export default function ApplyPage() {
             <ProgressBar currentStep={currentStep} />
             <StepIndicator currentStep={currentStep} />
 
+            {/* Informasi Posisi yang Dilamar */}
+            {minatDepartemen.posisiDilamar && (
+              <div className="mb-6 flex flex-wrap items-center justify-between gap-3 px-4 py-3 rounded-2xl border border-violet-500/30 bg-violet-500/10 backdrop-blur-sm text-xs">
+                <div className="flex items-center gap-2.5">
+                  <span className="flex h-2 w-2 rounded-full bg-emerald-400" />
+                  <span className="text-slate-300">
+                    Posisi Dilamar:{" "}
+                    <strong className="text-white font-semibold">{minatDepartemen.posisiDilamar}</strong>
+                    {minatDepartemen.departemenPertama && (
+                      <span className="ml-1 text-violet-300 font-medium">
+                        (Departemen {minatDepartemen.departemenPertama})
+                      </span>
+                    )}
+                  </span>
+                </div>
+                <Link
+                  href="/#lowongan"
+                  className="text-violet-400 hover:text-violet-200 transition-colors font-medium text-[11px] underline underline-offset-2"
+                >
+                  Ganti Posisi
+                </Link>
+              </div>
+            )}
+
             {/* Step header */}
             <div className="mb-6">
               <div className="flex items-center gap-2 text-xs text-slate-500 mb-1.5">
                 <span>Step {currentStep} dari {STEPS.length}</span>
-                <span>�</span>
+                <span>•</span>
                 <span className="text-violet-400">{Math.round(((currentStep - 1) / (STEPS.length - 1)) * 100)}% selesai</span>
               </div>
               <h2 className="text-xl font-bold text-white">{title}</h2>

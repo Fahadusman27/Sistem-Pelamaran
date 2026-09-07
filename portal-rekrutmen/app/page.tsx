@@ -1,9 +1,9 @@
-import Link from "next/link";
+"use client";
 
-export const metadata = {
-  title: "Portal Rekrutmen - PT Adiprima Suraprinta",
-  description: "Portal rekrutmen digital PT Adiprima Suraprinta. Isi biodata dan lamar posisi yang tersedia secara online.",
-};
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useBiodataStore } from "@/store/useBiodataStore";
+import OpenVacanciesSection from "@/components/OpenVacanciesSection";
 
 const BENEFITS = [
   {
@@ -36,6 +36,14 @@ const STEPS_PREVIEW = [
 ];
 
 export default function HomePage() {
+  const router = useRouter();
+  const { resetForm } = useBiodataStore();
+
+  const handleStartNewApplication = () => {
+    resetForm();
+    router.push("/apply");
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-violet-500 selection:text-white">
       {/* Navbar */}
@@ -52,21 +60,29 @@ export default function HomePage() {
           </div>
 
           <div className="flex items-center gap-3">
+            <a
+              href="#lowongan"
+              className="hidden md:inline-flex items-center gap-2 rounded-xl border border-violet-500/20 bg-violet-500/10 px-4 py-2 text-sm font-medium text-violet-300 transition-colors hover:bg-violet-500/20 hover:text-white"
+            >
+              <span className="flex h-2 w-2 rounded-full bg-emerald-400" />
+              Lowongan Terbuka
+            </a>
             <Link
               href="/preview"
               className="hidden sm:inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-white/10 hover:text-white"
             >
-              Preview Form Cetak
+              Preview Cetak
             </Link>
-            <Link
-              href="/apply"
+            <button
+              type="button"
+              onClick={handleStartNewApplication}
               className="inline-flex items-center gap-2 rounded-xl bg-violet-600 px-5 py-2 text-sm font-semibold text-white shadow-lg shadow-violet-600/30 transition-all hover:bg-violet-500 active:scale-95"
             >
               Lamar Sekarang
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
               </svg>
-            </Link>
+            </button>
           </div>
         </div>
       </header>
@@ -94,24 +110,37 @@ export default function HomePage() {
           </p>
 
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-            <Link
-              href="/apply"
+            <button
+              type="button"
+              onClick={handleStartNewApplication}
               className="inline-flex items-center gap-3 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-8 py-4 text-base font-semibold text-white shadow-xl shadow-violet-600/30 transition-all hover:scale-105 active:scale-95 hover:from-violet-500 hover:to-indigo-500"
             >
               Mulai Pendaftaran Online
               <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
               </svg>
-            </Link>
+            </button>
+            <a
+              href="#lowongan"
+              className="inline-flex items-center gap-2 rounded-2xl border border-violet-500/30 bg-violet-500/10 px-6 py-4 text-base font-semibold text-violet-200 backdrop-blur-sm transition-all hover:bg-violet-500/20 hover:border-violet-500/50 hover:text-white"
+            >
+              Lihat Posisi Terbuka (7)
+              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </a>
             <Link
               href="/preview"
               className="inline-flex items-center gap-2 rounded-2xl border border-white/15 bg-white/5 px-6 py-4 text-base font-semibold text-slate-200 backdrop-blur-sm transition-all hover:bg-white/10 hover:border-white/25 hover:text-white"
             >
-              Preview Form Cetak (4 Halaman A4)
+              Preview Form Cetak
             </Link>
           </div>
         </div>
       </section>
+
+      {/* Lowongan Kerja yang Sedang Terbuka */}
+      <OpenVacanciesSection />
 
       {/* Steps Overview */}
       <section className="border-t border-white/10 bg-slate-900/40 py-20">
@@ -174,8 +203,19 @@ export default function HomePage() {
         <div className="mx-auto max-w-6xl px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <p>&copy; {new Date().getFullYear()} PT Adiprima Suraprinta. All rights reserved.</p>
           <div className="flex items-center gap-6">
-            <Link href="/apply" className="hover:text-slate-300 transition-colors">Formulir Lamaran</Link>
-            <Link href="/preview" className="hover:text-slate-300 transition-colors">Preview Dokumen Cetak</Link>
+            <a href="#lowongan" className="hover:text-slate-300 transition-colors text-xs">
+              Posisi Terbuka
+            </a>
+            <button
+              type="button"
+              onClick={handleStartNewApplication}
+              className="hover:text-slate-300 transition-colors text-xs"
+            >
+              Formulir Lamaran
+            </button>
+            <Link href="/preview" className="hover:text-slate-300 transition-colors">
+              Preview Dokumen Cetak
+            </Link>
           </div>
         </div>
       </footer>

@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useBiodataStore } from "@/store/useBiodataStore";
@@ -9,7 +8,6 @@ import { dataPribadiSchema, DataPribadiFormData } from "@/lib/schemas";
 import PhotoUploader from "@/components/PhotoUploader";
 
 const agamaOptions = ["Islam", "Kristen", "Katolik", "Hindu", "Buddha", "Konghucu"];
-const jenjangList = ["SD", "SMP", "SMA/SMK", "D1", "D2", "D3", "S1", "S2", "S3"];
 
 interface Props {
   onNext: () => void;
@@ -21,7 +19,6 @@ export default function Step1DataPribadi({ onNext }: Props) {
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors },
   } = useForm<DataPribadiFormData>({
     resolver: zodResolver(dataPribadiSchema),

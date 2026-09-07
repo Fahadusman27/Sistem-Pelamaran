@@ -42,11 +42,11 @@ export default function Step2Pendidikan({ onNext, onBack }: Props) {
 
   // -- Form Pendidikan Formal ------------------------------------------------
   const formalForm = useForm<PendidikanFormal>({
-    resolver: zodResolver(pendidikanFormalSchema) as any,
+    resolver: zodResolver(pendidikanFormalSchema),
     defaultValues: { id: "", jenjang: "", namaInstitusi: "", jurusan: "", tahunMasuk: "", tahunLulus: "", nilaiAkhir: "" },
   });
 
-  const onAddFormal = (data: any) => {
+  const onAddFormal = (data: PendidikanFormal) => {
     addPendidikanFormal({ ...data, id: nanoid() });
     formalForm.reset();
     setShowFormFormal(false);

@@ -49,31 +49,67 @@ function formatTgl(iso: string): string {
 // ─── Sub-komponen ─────────────────────────────────────────────────────────────
 
 function FieldRow({ label, value }: { label: string; value?: string | number }) {
+  const hasValue = value !== undefined && value !== null && String(value).trim() !== "";
   return (
-    <tr style={{ lineHeight: "1.55" }}>
-      <td style={{ width: "38mm", paddingLeft: "2px", paddingRight: 0, verticalAlign: "top", whiteSpace: "nowrap", fontSize: "7pt" }}>
+    <tr style={{ height: "18px" }}>
+      <td style={{ width: "38mm", padding: "1px 4px", verticalAlign: "middle", whiteSpace: "nowrap", fontSize: "9px", color: "#222" }}>
         {label}
       </td>
-      <td style={{ width: "4mm", textAlign: "center", verticalAlign: "top", fontSize: "7pt" }}>:</td>
-      <td style={{ borderBottom: "0.5px solid #000", paddingLeft: "2px", paddingRight: "2px", verticalAlign: "top", fontSize: "7pt", fontWeight: 500 }}>
-        {value !== undefined && value !== "" ? String(value) : "\u00a0"}
+      <td style={{ width: "3mm", textAlign: "center", verticalAlign: "middle", fontSize: "9px", color: "#222" }}>:</td>
+      <td style={{ padding: "1px 4px", verticalAlign: "middle", fontSize: "9px", fontWeight: 600, color: "#000", wordBreak: "break-word", overflowWrap: "anywhere" }}>
+        {hasValue ? (
+          <span style={{ wordBreak: "break-word", overflowWrap: "anywhere", lineHeight: "1.25" }}>{String(value)}</span>
+        ) : (
+          <span style={{ color: "#9ca3af" }}>-</span>
+        )}
       </td>
     </tr>
   );
 }
 
-function Th({ children, w, cx = "" }: { children: React.ReactNode; w?: string; cx?: string }) {
+function Th({ children, w, colSpan, rowSpan }: { children: React.ReactNode; w?: string; colSpan?: number; rowSpan?: number }) {
   return (
-    <th style={{ border: "1px solid #000", background: "#e5e7eb", padding: "2px 3px", textAlign: "center", fontSize: "6.5pt", fontWeight: "bold", lineHeight: "1.3", width: w }}>
-      {children}
+    <th
+      colSpan={colSpan}
+      rowSpan={rowSpan}
+      style={{
+        border: "1px solid #000",
+        background: "#e5e7eb",
+        padding: "3px 3px",
+        textAlign: "center",
+        fontSize: "7.5pt",
+        fontWeight: "bold",
+        lineHeight: "1.3",
+        verticalAlign: "middle",
+        width: w,
+        boxSizing: "border-box",
+        wordBreak: "break-word",
+        overflowWrap: "anywhere",
+      }}
+    >
+      <div style={{ lineHeight: "1.3", padding: "1px 0", wordBreak: "break-word", overflowWrap: "anywhere" }}>{children}</div>
     </th>
   );
 }
 
-function Td({ children, center }: { children?: React.ReactNode; center?: boolean }) {
+function Td({ children, center, colSpan, w }: { children?: React.ReactNode; center?: boolean; colSpan?: number; w?: string }) {
   return (
-    <td style={{ border: "1px solid #000", padding: "2px 3px", fontSize: "6.5pt", lineHeight: "1.3", textAlign: center ? "center" : "left", minHeight: "5mm" }}>
-      {children ?? "\u00a0"}
+    <td
+      colSpan={colSpan}
+      style={{
+        border: "1px solid #000",
+        padding: "2px 4px",
+        fontSize: "7.5pt",
+        lineHeight: "1.25",
+        textAlign: center ? "center" : "left",
+        verticalAlign: "middle",
+        width: w,
+        boxSizing: "border-box",
+        wordBreak: "break-word",
+        overflowWrap: "anywhere",
+      }}
+    >
+      <div style={{ lineHeight: "1.25", padding: "1px 0", wordBreak: "break-word", overflowWrap: "anywhere" }}>{children ?? "\u00a0"}</div>
     </td>
   );
 }
@@ -151,22 +187,27 @@ export default function PrintLayoutPage1({
   const today = new Date().toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" });
 
   // ── Shared inline style resets ──────────────────────────────────────────────
-  const tblStyle: React.CSSProperties = { width: "100%", borderCollapse: "collapse", borderSpacing: 0 };
+  const tblStyle: React.CSSProperties = { width: "100%", tableLayout: "fixed", borderCollapse: "separate", borderSpacing: 0 };
 
   return (
     <div
       id="print-page-1"
       style={{
         width: "210mm",
-        minHeight: "297mm",
-        padding: "8mm 10mm 8mm 12mm",
+        height: "297mm",
+        maxHeight: "297mm",
+        padding: "6mm 10mm 6mm 10mm",
         boxSizing: "border-box",
         background: "white",
         color: "black",
         fontFamily: "Arial, Helvetica, sans-serif",
-        fontSize: "7.5pt",
-        lineHeight: "1.3",
+        fontSize: "9.5px",
+        lineHeight: "1.25",
         margin: "0 auto",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
       }}
     >
 
@@ -176,37 +217,40 @@ export default function PrintLayoutPage1({
           <tr>
             {/* Logo */}
             <td style={{ border: "2px solid #000", width: "22mm", padding: "2mm", verticalAlign: "middle" }}>
-              <div style={{ border: "1.5px solid #000", width: "18mm", height: "18mm", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <span style={{ fontSize: "7pt", fontWeight: "bold", textAlign: "center", color: "#444", lineHeight: 1.3 }}>
-                  PT<br />APS
-                </span>
+              <div style={{ border: "1.5px solid #000", width: "18mm", height: "18mm", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", background: "#fff" }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/logo.jpg"
+                  alt="Logo PT Adiprima Suraprinta"
+                  style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
+                />
               </div>
             </td>
 
             {/* Nama & Judul */}
             <td style={{ border: "2px solid #000", borderLeft: "none", textAlign: "center", verticalAlign: "middle", padding: "1mm 3mm" }}>
-              <div style={{ fontWeight: "bold", fontSize: "10pt", letterSpacing: "0.08em", marginBottom: "1mm" }}>
+              <div style={{ fontWeight: "bold", fontSize: "13px", letterSpacing: "0.08em", marginBottom: "1mm" }}>
                 PT ADIPRIMA SURAPRINTA
               </div>
-              <div style={{ fontWeight: "900", fontSize: "14pt", letterSpacing: "0.1em" }}>
+              <div style={{ fontWeight: "900", fontSize: "17px", letterSpacing: "0.1em" }}>
                 BIODATA KARYAWAN
               </div>
             </td>
 
             {/* No Form & Revisi */}
             <td style={{ border: "2px solid #000", borderLeft: "none", width: "28mm", padding: 0, verticalAlign: "middle" }}>
-              <table style={tblStyle}>
+              <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: 0 }}>
                 <tbody>
                   <tr>
-                    <td style={{ borderBottom: "1px solid #000", padding: "2px 5px", fontSize: "7pt", lineHeight: 1.4 }}>
-                      <strong style={{ display: "block" }}>No. Form</strong>
-                      {noForm}
+                    <td style={{ borderBottom: "1px solid #000", padding: "3px 5px", fontSize: "9px", lineHeight: "1.2", verticalAlign: "middle" }}>
+                      <strong style={{ display: "block", fontSize: "8.5px", marginBottom: "1px" }}>No. Form</strong>
+                      <div>{noForm}</div>
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ padding: "2px 5px", fontSize: "7pt", lineHeight: 1.4 }}>
-                      <strong style={{ display: "block" }}>No. Revisi</strong>
-                      {noRevisi}
+                    <td style={{ padding: "3px 5px", fontSize: "9px", lineHeight: "1.2", verticalAlign: "middle" }}>
+                      <strong style={{ display: "block", fontSize: "8.5px", marginBottom: "1px" }}>No. Revisi</strong>
+                      <div>{noRevisi}</div>
                     </td>
                   </tr>
                 </tbody>

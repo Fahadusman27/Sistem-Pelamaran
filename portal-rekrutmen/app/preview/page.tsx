@@ -15,6 +15,7 @@
 "use client";
 
 import { useRef, useState, useCallback } from "react";
+import { useRouter }                      from "next/navigation";
 import { useReactToPrint }               from "react-to-print";
 import { useBiodataStore }               from "@/store/useBiodataStore";
 
@@ -23,6 +24,9 @@ import PrintLayoutPage2 from "@/components/print/PrintLayoutPage2";
 import PrintLayoutPage3 from "@/components/print/PrintLayoutPage3";
 import PrintLayoutPage4 from "@/components/print/PrintLayoutPage4";
 import type { KemampuanBahasa } from "@/components/print/PrintLayoutPage2";
+
+import { generateApplicationPdfBlob }    from "@/lib/pdfGenerator";
+import { uploadPdfToSupabase, submitApplicationToBackend } from "@/lib/submissionService";
 
 // ─── Konstanta ────────────────────────────────────────────────────────────────
 
@@ -66,6 +70,7 @@ const DEFAULT_BAHASA: KemampuanBahasa[] = [
 // ─── Komponen Utama ───────────────────────────────────────────────────────────
 
 export default function PreviewPage() {
+  const router = useRouter();
   const {
     dataPribadi,
     photoBase64,
@@ -77,12 +82,24 @@ export default function PreviewPage() {
     jawabanEsai,
     minatDepartemen,
     persetujuan,
+    setSubmittedApplication,
+    goToStep,
   } = useBiodataStore();
+
+  const handleEditForm = () => {
+    goToStep(1);
+    router.push("/apply");
+  };
 
   const printAreaRef = useRef<HTMLDivElement>(null);
   const [isPrinting, setIsPrinting] = useState(false);
 
-  // ── react-to-print v3 ──────────────────────────────────────────────────────
+  // ── State Pengiriman Lamaran ──────────────────────────────────────────────
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStepText, setSubmitStepText] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  // ── react-to-print v3 (Manual Print) ──────────────────────────────────────
   const handlePrint = useReactToPrint({
     contentRef:    printAreaRef,
     documentTitle: `Biodata_${dataPribadi.namaLengkap || "Karyawan"}_${FORM_NO}`,
@@ -94,6 +111,74 @@ export default function PreviewPage() {
       setIsPrinting(false);
     },
   });
+
+  // ── Handler: Submit Lamaran ke Backend via Supabase & PDF Generator ────────
+  const handleSubmitApplication = async () => {
+    try {
+      setIsSubmitting(true);
+      setErrorMessage(null);
+
+      // 1. Dapatkan 4 elemen halaman di DOM
+      setSubmitStepText("1/3 Membuat file PDF 4 halaman di latar belakang...");
+      const el1 = document.getElementById("print-page-1");
+      const el2 = document.getElementById("print-page-2");
+      const el3 = document.getElementById("print-page-3");
+      const el4 = document.getElementById("print-page-4");
+
+      if (!el1 || !el2 || !el3 || !el4) {
+        throw new Error("Elemen dokumen halaman 1-4 belum siap dirender.");
+      }
+
+      // Generate PDF Blob secara background tanpa browser print dialog
+      const pdfBlob = await generateApplicationPdfBlob([el1, el2, el3, el4]);
+
+      // 2. Upload PDF ke Supabase Storage (bucket 'resumes')
+      setSubmitStepText("2/3 Mengunggah berkas PDF ke Supabase Storage...");
+      let publicPdfUrl = "";
+      try {
+        publicPdfUrl = await uploadPdfToSupabase(
+          pdfBlob,
+          dataPribadi.namaLengkap || "Pelamar"
+        );
+      } catch (uploadErr) {
+        console.warn("Peringatan upload storage Supabase:", uploadErr);
+        // Fallback jika storage bucket belum disetup
+        publicPdfUrl = "";
+      }
+
+      // 3. Simpan data ke Backend Golang API (POST /api/applications)
+      setSubmitStepText("3/3 Menyimpan data lamaran ke database rekrutmen...");
+      const result = await submitApplicationToBackend({
+        applicant_name: dataPribadi.namaLengkap || "Pelamar",
+        email:          dataPribadi.email || "pelamar@example.com",
+        department:     minatDepartemen.departemenPertama || "Umum",
+        pdf_file_path:  publicPdfUrl || "",
+        pdf_url:        publicPdfUrl || "",
+      });
+
+      // 4. Update Zustand Store dengan data lamaran terdaftar
+      setSubmittedApplication({
+        id:            result.data?.id,
+        applicantName: dataPribadi.namaLengkap,
+        email:          dataPribadi.email,
+        department:     minatDepartemen.departemenPertama,
+        status:         "Terkirim",
+        pdfUrl:         publicPdfUrl,
+        submittedAt:    new Date().toISOString(),
+      });
+
+      // 5. Alihkan ke halaman /status
+      const targetId = result.data?.id || "";
+      router.push(`/status?id=${targetId}&status=Terkirim`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Terjadi kesalahan saat memproses lamaran.";
+      console.error("Submission Error:", err);
+      setErrorMessage(msg);
+    } finally {
+      setIsSubmitting(false);
+      setSubmitStepText("");
+    }
+  };
 
   // ── State: nomor halaman yang sedang di-scroll ────────────────────────────
   const [activePage, setActivePage] = useState(1);
@@ -159,8 +244,9 @@ export default function PreviewPage() {
 
         {/* Kanan: Aksi */}
         <div className="flex items-center gap-2 flex-shrink-0">
-          <a
-            href="/apply"
+          <button
+            type="button"
+            onClick={handleEditForm}
             className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs
                        border border-white/10 text-gray-400 hover:text-white hover:border-white/30
                        transition-all duration-200"
@@ -169,34 +255,49 @@ export default function PreviewPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
             </svg>
             Edit Form
-          </a>
+          </button>
 
+          {/* Tombol Cetak / PDF Manual */}
           <button
             id="btn-download-print"
             onClick={() => handlePrint()}
-            disabled={isPrinting}
+            disabled={isPrinting || isSubmitting}
+            className="hidden md:flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold
+                       bg-gray-800 hover:bg-gray-700 border border-white/10 text-gray-200 transition-all"
+          >
+            <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Print
+          </button>
+
+          {/* Tombol Utama: SUBMIT LAMARAN KE DATABASE & SUPABASE */}
+          <button
+            id="btn-submit-application"
+            onClick={handleSubmitApplication}
+            disabled={isSubmitting}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold
                         transition-all duration-200 shadow-lg
-                        ${isPrinting
-                          ? "bg-gray-700 text-gray-400 cursor-not-allowed"
-                          : "bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white hover:scale-[1.02] active:scale-[0.98] shadow-violet-900/40"
+                        ${isSubmitting
+                          ? "bg-gray-700 text-gray-400 cursor-wait"
+                          : "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white hover:scale-[1.02] active:scale-[0.98] shadow-emerald-900/40"
                         }`}
           >
-            {isPrinting ? (
+            {isSubmitting ? (
               <>
                 <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
-                Mempersiapkan...
+                <span>Memproses...</span>
               </>
             ) : (
               <>
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                    d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                 </svg>
-                Download / Print Biodata
+                <span>Submit Lamaran</span>
               </>
             )}
           </button>
@@ -251,8 +352,8 @@ export default function PreviewPage() {
               {[
                 { n: 1, label: "Data Pribadi",          sub: "Pendidikan · Organisasi" },
                 { n: 2, label: "Pengalaman Kerja",       sub: "Prestasi · Bahasa" },
-                { n: 3, label: "Pertanyaan Esai",        sub: "Q1 – Q12" },
-                { n: 4, label: "Esai Lanjutan",          sub: "Q13–Q23 · Minat · TTD" },
+                { n: 3, label: "Pertanyaan Esai",        sub: "Q1 – Q23" },
+                { n: 4, label: "Minat & Pernyataan",     sub: "Minat · TTD · Evaluasi HRD" },
               ].map(({ n, label, sub }) => (
                 <button
                   key={n}
@@ -301,8 +402,8 @@ export default function PreviewPage() {
             {[
               { n: 1, title: "Halaman 1",  desc: "Data Pribadi · Pendidikan · Organisasi" },
               { n: 2, title: "Halaman 2",  desc: "Prestasi · Bahasa · Pengalaman Kerja" },
-              { n: 3, title: "Halaman 3",  desc: "Pertanyaan Esai Q1–Q12" },
-              { n: 4, title: "Halaman 4",  desc: "Esai Q13–Q23 · Minat Bekerja · Pernyataan" },
+              { n: 3, title: "Halaman 3",  desc: "Pertanyaan Esai (Q1–Q23)" },
+              { n: 4, title: "Halaman 4",  desc: "Minat Bekerja · Pernyataan · Evaluasi HRD" },
             ].map(({ n, title, desc }) => (
               <div key={n} id={`preview-page-${n}`} className="w-full flex flex-col items-center gap-2">
                 {/* Label halaman — hanya di layar */}
@@ -416,6 +517,51 @@ export default function PreviewPage() {
           </div>
         </div>
       </div>
+
+      {/* ── Progress Modal Overlay saat Submit Berlangsung ─────────────────── */}
+      {isSubmitting && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-violet-500/30 rounded-3xl p-8 max-w-md w-full shadow-2xl text-center space-y-5 animate-in fade-in zoom-in duration-300">
+            <div className="relative mx-auto w-16 h-16">
+              <div className="w-16 h-16 rounded-full border-4 border-violet-500/20 border-t-violet-500 animate-spin" />
+              <div className="absolute inset-0 flex items-center justify-center text-xl">
+                📄
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-lg font-bold text-white mb-1">Memproses Pengiriman Lamaran</h3>
+              <p className="text-xs text-violet-300 font-medium">{submitStepText}</p>
+            </div>
+
+            <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-violet-500 to-emerald-500 rounded-full animate-pulse" style={{ width: "100%" }} />
+            </div>
+
+            <p className="text-[11px] text-slate-400">
+              Mohon jangan menutup jendela browser selama proses pembuatan PDF dan pengunggahan berkas.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ── Error Notification Toast / Modal ───────────────────────────────── */}
+      {errorMessage && (
+        <div className="fixed bottom-6 right-6 z-50 max-w-md bg-rose-950/90 border border-rose-500/40 rounded-2xl p-4 shadow-2xl backdrop-blur-md text-white flex items-start gap-3">
+          <span className="text-rose-400 text-lg">⚠️</span>
+          <div className="flex-1 text-xs">
+            <p className="font-bold text-rose-300">Gagal Mengirimkan Lamaran</p>
+            <p className="text-slate-300 mt-0.5">{errorMessage}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setErrorMessage(null)}
+            className="text-slate-400 hover:text-white text-sm"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
     </div>
   );

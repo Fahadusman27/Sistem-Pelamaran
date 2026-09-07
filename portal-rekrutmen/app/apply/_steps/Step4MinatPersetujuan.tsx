@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useEffect } from "react";
+import { useForm, Controller, type Control } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useBiodataStore } from "@/store/useBiodataStore";
 import { minatPersetujuanSchema, type MinatPersetujuanFormData } from "@/lib/schemas";
@@ -23,7 +23,7 @@ function RadioGroup({
 }: {
   label: string;
   name: "bersediaSistemShift" | "bersediaPenempatan" | "menyetujuiGajiStandar";
-  control: any;
+  control: Control<MinatPersetujuanFormData>;
   error?: string;
 }) {
   return (
@@ -54,7 +54,6 @@ function RadioGroup({
 
 export default function Step4MinatPersetujuan({ onBack, onSubmitFinal }: Props) {
   const { minatDepartemen, persetujuan } = useBiodataStore();
-  const [submitted, setSubmitted] = useState(false);
 
   const inputClass = (hasError = false) =>
     `w-full rounded-xl border px-4 py-3 text-sm bg-white/5 text-white placeholder-slate-400
@@ -63,12 +62,12 @@ export default function Step4MinatPersetujuan({ onBack, onSubmitFinal }: Props) 
   const labelClass = "block text-sm font-medium text-slate-300 mb-1.5";
 
   const { register, handleSubmit, control, setValue, formState: { errors } } = useForm<MinatPersetujuanFormData>({
-    resolver: zodResolver(minatPersetujuanSchema) as any,
+    resolver: zodResolver(minatPersetujuanSchema),
     defaultValues: {
-      departemenPertama: minatDepartemen.departemenPertama || undefined,
-      departemenKedua:   minatDepartemen.departemenKedua   || undefined,
-      posisiDilamar:     minatDepartemen.posisiDilamar,
-      gajiDiharapkan:    minatDepartemen.gajiDiharapkan,
+      departemenPertama: (minatDepartemen.departemenPertama as any) || undefined,
+      departemenKedua:   (minatDepartemen.departemenKedua as any)   || undefined,
+      posisiDilamar:     minatDepartemen.posisiDilamar || "",
+      gajiDiharapkan:    minatDepartemen.gajiDiharapkan || "",
       bersediaSistemShift:       persetujuan.bersediaSistemShift   ?? undefined,
       bersediaPenempatan:        persetujuan.bersediaPenempatan    ?? undefined,
       menyetujuiGajiStandar:     persetujuan.menyetujuiGajiStandar ?? undefined,
@@ -77,29 +76,19 @@ export default function Step4MinatPersetujuan({ onBack, onSubmitFinal }: Props) 
     },
   });
 
+  // Sinkronisasi otomatis jika nilai departemen & posisi berubah dari store
+  useEffect(() => {
+    if (minatDepartemen.departemenPertama) {
+      setValue("departemenPertama", minatDepartemen.departemenPertama as any, { shouldValidate: true });
+    }
+    if (minatDepartemen.posisiDilamar) {
+      setValue("posisiDilamar", minatDepartemen.posisiDilamar, { shouldValidate: true });
+    }
+  }, [minatDepartemen.departemenPertama, minatDepartemen.posisiDilamar, setValue]);
+
   const onSubmit = (data: MinatPersetujuanFormData) => {
     onSubmitFinal(data);
-    setSubmitted(true);
   };
-
-  if (submitted) {
-    return (
-      <div className="flex flex-col items-center justify-center py-12 text-center space-y-4">
-        <div className="w-20 h-20 rounded-full bg-emerald-900/30 border border-emerald-500/30 flex items-center justify-center animate-bounce">
-          <svg className="w-10 h-10 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-          </svg>
-        </div>
-        <h2 className="text-2xl font-bold text-white">Lamaran Berhasil Dikirim!</h2>
-        <p className="text-slate-400 max-w-md">
-          Data Anda telah kami terima. Tim HRD akan menghubungi Anda melalui email atau WhatsApp dalam 3�7 hari kerja.
-        </p>
-        <p className="text-xs text-slate-500 mt-2">
-          Nomor referensi: <span className="text-violet-400 font-mono">{Date.now()}</span>
-        </p>
-      </div>
-    );
-  }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">

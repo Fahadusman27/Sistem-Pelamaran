@@ -97,7 +97,7 @@ export default function Step3PengalamanEsai({ onNext, onBack }: Props) {
 
   // -- Kerja Form ------------------------------------------------------------
   const kerjaForm = useForm<PengalamanKerjaForm>({
-    resolver: zodResolver(pengalamanKerjaSchema) as any,
+    resolver: zodResolver(pengalamanKerjaSchema),
     defaultValues: { id: "", namaPerusahaan: "", posisi: "", departemen: "", gajiTerakhir: "", periodeAwal: "", periodeAkhir: "", alasanKeluar: "", deskripsiTugas: "" },
   });
 
@@ -120,7 +120,7 @@ export default function Step3PengalamanEsai({ onNext, onBack }: Props) {
 
   // -- Esai Form -------------------------------------------------------------
   const esaiForm = useForm<JawabanEsaiFormData>({
-    resolver: zodResolver(jawabanEsaiSchema) as any,
+    resolver: zodResolver(jawabanEsaiSchema),
     defaultValues: jawabanEsai,
   });
 
@@ -256,7 +256,7 @@ export default function Step3PengalamanEsai({ onNext, onBack }: Props) {
       {activeTab === "esai" && (
         <form onSubmit={esaiForm.handleSubmit(onSaveEsai)} className="space-y-5">
           <p className="text-sm text-slate-400 bg-violet-950/30 border border-violet-500/20 rounded-xl px-4 py-3">
-            ?? Jawab setiap pertanyaan dengan jujur dan lengkap. Minimal 50 karakter per jawaban (kecuali no. 23).
+            💡 Jawab setiap pertanyaan dengan jujur dan jelas sesuai pengalaman Anda (tidak ada batas minimum karakter).
           </p>
           {PERTANYAAN_ESAI.map(({ key, label }) => (
             <div key={key}>

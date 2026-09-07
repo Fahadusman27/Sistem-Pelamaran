@@ -1,13 +1,13 @@
 /**
  * PrintLayoutPage4.tsx
  *
- * Layout cetak A4 Halaman 4 — Esai Lanjutan (Q13–Q23) + Minat Bekerja + Pernyataan.
+ * Layout cetak A4 Halaman 4 — Minat Bekerja + Pernyataan + Evaluasi HRD.
  *
  * Sections:
  *   Header (identik semua halaman)
- *   IX.  Pertanyaan Esai Lanjutan Q13–Q23
- *   X.   Minat Bekerja (checkbox departemen + garis isian)
- *   XI.  Pernyataan (paragraf consent + tanda tangan)
+ *   IX.  Minat Bekerja (pilihan departemen, posisi, ekspektasi, ketersediaan)
+ *   X.   Pernyataan & Persetujuan (consent kebenaran data + tanda tangan pelamar)
+ *   XI.  Catatan & Evaluasi Departemen HRD (kolom penilaian & verifikasi HRD)
  */
 
 import React from "react";
@@ -16,20 +16,19 @@ import type {
   MinatDepartemen,
   Persetujuan,
 } from "@/store/useBiodataStore";
-import { DAFTAR_PERTANYAAN } from "./PrintLayoutPage3";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Props
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface PrintLayoutPage4Props {
-  jawabanEsai?:    Partial<JawabanEsai>;
+  jawabanEsai?: Partial<JawabanEsai>;
   minatDepartemen?: MinatDepartemen;
-  persetujuan?:    Persetujuan;
+  persetujuan?: Persetujuan;
   signatureBase64?: string | null;
-  namaLengkap?:    string;
-  noForm?:         string;
-  noRevisi?:       string;
+  namaLengkap?: string;
+  noForm?: string;
+  noRevisi?: string;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -53,27 +52,20 @@ const SEMUA_DEPARTEMEN = [
 // Data Dummy
 // ─────────────────────────────────────────────────────────────────────────────
 
-const DUMMY_JAWABAN: Partial<JawabanEsai> = {
-  q13_keputusanSulit:            "Memutuskan untuk mengakhiri kontrak supplier lama yang sudah bertahun-tahun bekerja sama karena kualitas yang menurun, sambil menjaga hubungan profesional.",
-  q14_inovasiPerbaikanProses:    "Mengimplementasikan sistem monitoring OEE digital yang menggantikan pencatatan manual, berhasil mengurangi downtime mesin sebesar 18% dalam 3 bulan.",
-  q15_adaptasiPerubahan:         "Saat perusahaan berpindah ke sistem ERP baru, saya menjadi sukarelawan sebagai key user dan membantu pelatihan rekan tim dalam 2 minggu.",
-  q23_pertanyaanUntukPerusahaan: "Bagaimana program pengembangan karyawan baru di PT Adiprima Suraprinta? Dan apakah ada program mentoring dari senior engineer?",
-};
-
 const DUMMY_MINAT: MinatDepartemen = {
   departemenPertama: "Engineering",
-  departemenKedua:   "Produksi",
-  posisiDilamar:     "Industrial / Process Engineer",
-  gajiDiharapkan:    "Rp 7.500.000 – Rp 9.000.000 / bulan (Negotiable)",
+  departemenKedua: "Produksi",
+  posisiDilamar: "Industrial / Process Engineer",
+  gajiDiharapkan: "Rp 7.500.000 – Rp 9.000.000 / bulan (Negotiable)",
 };
 
 const DUMMY_PERSETUJUAN: Persetujuan = {
-  bersediaSistemShift:       true,
-  bersediaPenempatan:        true,
-  menyetujuiGajiStandar:     true,
+  bersediaSistemShift: true,
+  bersediaPenempatan: true,
+  menyetujuiGajiStandar: true,
   menyetujuiSyaratKetentuan: true,
-  tandaTanganDigital:        "Budi Santoso, S.T.",
-  tanggalPersetujuan:        new Date().toISOString().split("T")[0],
+  tandaTanganDigital: "Budi Santoso, S.T.",
+  tanggalPersetujuan: new Date().toISOString().split("T")[0],
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -81,25 +73,40 @@ const DUMMY_PERSETUJUAN: Persetujuan = {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function PageHeader({ noForm, noRevisi }: { noForm: string; noRevisi: string }) {
-  const tbl: React.CSSProperties = { width: "100%", borderCollapse: "collapse" };
+  const tbl: React.CSSProperties = { width: "100%", borderCollapse: "separate", borderSpacing: 0 };
   return (
     <table style={{ ...tbl, marginBottom: "4px" }}>
       <tbody>
         <tr>
           <td style={{ border: "2px solid #000", width: "22mm", padding: "2mm", verticalAlign: "middle" }}>
-            <div style={{ border: "1.5px solid #000", width: "18mm", height: "18mm", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ fontSize: "7pt", fontWeight: "bold", textAlign: "center", color: "#444", lineHeight: 1.3 }}>PT<br />APS</span>
+            <div style={{ border: "1.5px solid #000", width: "18mm", height: "18mm", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", background: "#fff" }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/logo.jpg"
+                alt="Logo PT Adiprima Suraprinta"
+                style={{ width: "100%", height: "100%", objectFit: "contain", display: "block" }}
+              />
             </div>
           </td>
           <td style={{ border: "2px solid #000", borderLeft: "none", textAlign: "center", verticalAlign: "middle", padding: "1mm 3mm" }}>
-            <div style={{ fontWeight: "bold", fontSize: "10pt", letterSpacing: "0.08em", marginBottom: "1mm" }}>PT ADIPRIMA SURAPRINTA</div>
-            <div style={{ fontWeight: "900", fontSize: "14pt", letterSpacing: "0.1em" }}>BIODATA KARYAWAN</div>
+            <div style={{ fontWeight: "bold", fontSize: "13px", letterSpacing: "0.08em", marginBottom: "1mm" }}>PT ADIPRIMA SURAPRINTA</div>
+            <div style={{ fontWeight: "900", fontSize: "17px", letterSpacing: "0.1em" }}>BIODATA KARYAWAN</div>
           </td>
           <td style={{ border: "2px solid #000", borderLeft: "none", width: "28mm", padding: 0, verticalAlign: "middle" }}>
-            <table style={tbl}>
+            <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: 0 }}>
               <tbody>
-                <tr><td style={{ borderBottom: "1px solid #000", padding: "2px 5px", fontSize: "7pt", lineHeight: 1.4 }}><strong style={{ display: "block" }}>No. Form</strong>{noForm}</td></tr>
-                <tr><td style={{ padding: "2px 5px", fontSize: "7pt", lineHeight: 1.4 }}><strong style={{ display: "block" }}>No. Revisi</strong>{noRevisi}</td></tr>
+                <tr>
+                  <td style={{ borderBottom: "1px solid #000", padding: "3px 5px", fontSize: "9px", lineHeight: "1.2", verticalAlign: "middle" }}>
+                    <strong style={{ display: "block", fontSize: "8.5px", marginBottom: "1px" }}>No. Form</strong>
+                    <div>{noForm}</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style={{ padding: "3px 5px", fontSize: "9px", lineHeight: "1.2", verticalAlign: "middle" }}>
+                    <strong style={{ display: "block", fontSize: "8.5px", marginBottom: "1px" }}>No. Revisi</strong>
+                    <div>{noRevisi}</div>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </td>
@@ -114,7 +121,7 @@ function PageHeader({ noForm, noRevisi }: { noForm: string; noRevisi: string }) 
 // ─────────────────────────────────────────────────────────────────────────────
 
 function DotLine() {
-  return <div style={{ borderBottom: "1px dotted #555", marginTop: "3px", minHeight: "4mm" }} />;
+  return <div style={{ borderBottom: "1px dotted #888", height: "3.8mm", marginBottom: "1px", boxSizing: "border-box" }} />;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -125,28 +132,28 @@ function IsianRow({
   label,
   value,
   extraLines = 0,
-  labelWidth = "52mm",
+  labelWidth = "58mm",
 }: {
-  label:       string;
-  value?:      string;
+  label: string;
+  value?: string;
   extraLines?: number;
   labelWidth?: string;
 }) {
   const hasValue = value && value.trim();
   return (
-    <div style={{ display: "flex", gap: "2px", marginBottom: "2px", alignItems: "flex-start" }}>
-      <span style={{ fontSize: "7pt", minWidth: labelWidth, flexShrink: 0 }}>{label}</span>
-      <span style={{ fontSize: "7pt", marginRight: "3px" }}>:</span>
-      <div style={{ flex: 1 }}>
+    <div style={{ display: "flex", gap: "2px", marginBottom: "2px", alignItems: "flex-start", lineHeight: "1.35", overflow: "hidden" }}>
+      <span style={{ fontSize: "7pt", minWidth: labelWidth, flexShrink: 0, color: "#222", lineHeight: "1.35" }}>{label}</span>
+      <span style={{ fontSize: "7pt", marginRight: "4px", lineHeight: "1.35" }}>:</span>
+      <div style={{ flex: 1, minHeight: "3.8mm", wordBreak: "break-word", overflowWrap: "anywhere" }}>
         {hasValue ? (
-          <span style={{ fontSize: "7pt", fontWeight: "500", borderBottom: "0.5px solid #000", display: "block", paddingBottom: "1px" }}>
+          <span style={{ fontSize: "7pt", fontWeight: "600", color: "#000", display: "block", lineHeight: "1.35", wordBreak: "break-word", overflowWrap: "anywhere" }}>
             {value}
           </span>
         ) : (
-          <>
+          <div style={{ paddingTop: "1px" }}>
             <DotLine />
             {Array.from({ length: extraLines }).map((_, i) => <DotLine key={i} />)}
-          </>
+          </div>
         )}
       </div>
     </div>
@@ -161,7 +168,7 @@ function DeptCheckbox({
   label,
   checked,
 }: {
-  label:   string;
+  label: string;
   checked: boolean;
 }) {
   return (
@@ -170,9 +177,8 @@ function DeptCheckbox({
       alignItems: "center",
       gap: "4px",
       fontSize: "7pt",
-      lineHeight: 1.5,
+      lineHeight: 1.4,
     }}>
-      {/* Kotak checkbox */}
       <span style={{
         display: "inline-flex",
         alignItems: "center",
@@ -184,77 +190,30 @@ function DeptCheckbox({
         fontWeight: "bold",
         fontSize: "8pt",
         lineHeight: 1,
+        background: checked ? "#f3f4f6" : "#fff",
       }}>
         {checked ? "\u2713" : ""}
       </span>
-      <span style={{ fontWeight: checked ? "bold" : "normal" }}>{label}</span>
+      <span style={{ fontWeight: checked ? "bold" : "normal", color: checked ? "#000" : "#333" }}>{label}</span>
     </div>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Sub-komponen: Satu item esai ringkas (Q13–Q23)
-// ─────────────────────────────────────────────────────────────────────────────
-
-function EsaiItemKompak({
-  nomor,
-  teks,
-  jawaban,
-  lines,
-}: {
-  nomor:   number;
-  teks:    string;
-  jawaban: string;
-  lines:   number;
-}) {
-  const punya = jawaban && jawaban.trim().length > 0;
-  return (
-    <div style={{ marginBottom: "4px", pageBreakInside: "avoid" }}>
-      <div style={{ display: "flex", gap: "4px", alignItems: "flex-start" }}>
-        <span style={{ fontSize: "7.5pt", fontWeight: "bold", minWidth: "8mm", flexShrink: 0 }}>{nomor}.</span>
-        <span style={{ fontSize: "7.5pt", fontWeight: "bold", lineHeight: 1.45 }}>{teks}</span>
-      </div>
-      <div style={{ paddingLeft: "8mm", marginTop: "2px" }}>
-        {punya ? (
-          <div style={{
-            background: "#f8f8f8",
-            border: "0.5px solid #ccc",
-            padding: "3px 5px",
-            fontSize: "7pt",
-            lineHeight: 1.55,
-            whiteSpace: "pre-wrap",
-            wordBreak: "break-word",
-          }}>
-            {jawaban}
-          </div>
-        ) : (
-          Array.from({ length: lines }).map((_, i) => <DotLine key={i} />)
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Komponen Utama
+// Komponen Utama — Halaman 4
 // ─────────────────────────────────────────────────────────────────────────────
 
 export default function PrintLayoutPage4({
-  jawabanEsai     = DUMMY_JAWABAN,
   minatDepartemen = DUMMY_MINAT,
-  persetujuan     = DUMMY_PERSETUJUAN,
+  persetujuan = DUMMY_PERSETUJUAN,
   signatureBase64,
-  namaLengkap     = "",
-  noForm          = "F-HRD-001",
-  noRevisi        = "00",
+  namaLengkap = "",
+  noForm = "F-HRD-001",
+  noRevisi = "00",
 }: PrintLayoutPage4Props) {
-
-  // Q13–Q23
-  const pertanyaanHalaman4 = DAFTAR_PERTANYAAN.slice(12);
 
   const finalSignature = signatureBase64 !== undefined ? signatureBase64 : (persetujuan.tandaTanganDigital || null);
 
-  const tbl: React.CSSProperties = { width: "100%", borderCollapse: "collapse" };
   const today = persetujuan.tanggalPersetujuan
     ? new Date(persetujuan.tanggalPersetujuan).toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" })
     : new Date().toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" });
@@ -262,7 +221,7 @@ export default function PrintLayoutPage4({
   // Helper: apakah departemen ini dipilih (pertama ATAU kedua)?
   const isDeptChecked = (dept: string) =>
     minatDepartemen.departemenPertama === dept ||
-    minatDepartemen.departemenKedua   === dept;
+    minatDepartemen.departemenKedua === dept;
 
   // Bersedia shift / penempatan → tampilkan "Ya" / "Tidak"
   const boolToText = (val: boolean | null | undefined) =>
@@ -273,53 +232,37 @@ export default function PrintLayoutPage4({
       id="print-page-4"
       style={{
         width: "210mm",
-        minHeight: "297mm",
-        padding: "8mm 10mm 8mm 12mm",
+        height: "297mm",
+        maxHeight: "297mm",
+        padding: "6mm 10mm 6mm 10mm",
         boxSizing: "border-box",
         background: "white",
         color: "black",
         fontFamily: "Arial, Helvetica, sans-serif",
         fontSize: "7.5pt",
-        lineHeight: 1.3,
+        lineHeight: "1.25",
         margin: "0 auto",
+        overflow: "hidden",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-between",
       }}
     >
       {/* Header */}
       <PageHeader noForm={noForm} noRevisi={noRevisi} />
 
-      {/* ══ SECTION IX — PERTANYAAN ESAI LANJUTAN (Q13–Q23) ════════════════ */}
-      <div style={{ border: "2px solid #000", marginBottom: "4px" }}>
-        <div style={{ background: "#d1d5db", borderBottom: "2px solid #000", padding: "2px 6px" }}>
-          <strong style={{ fontSize: "8pt" }}>IX.&nbsp;&nbsp;PERTANYAAN ESAI (Lanjutan — Q13 s/d Q23)</strong>
-          <span style={{ fontSize: "6.5pt", fontStyle: "italic", marginLeft: "8px", color: "#555" }}>
-            (Halaman 4 dari 4)
-          </span>
-        </div>
-        <div style={{ padding: "5px 6px" }}>
-          {pertanyaanHalaman4.map((p) => (
-            <EsaiItemKompak
-              key={p.key}
-              nomor={p.nomor}
-              teks={p.teks}
-              jawaban={jawabanEsai[p.key] ?? ""}
-              lines={p.lines}
-            />
-          ))}
-        </div>
-      </div>
-
-      {/* ══ SECTION X — MINAT BEKERJA ════════════════════════════════════════ */}
-      <div style={{ border: "2px solid #000", marginBottom: "4px" }}>
-        <div style={{ background: "#d1d5db", borderBottom: "2px solid #000", padding: "2px 6px" }}>
-          <strong style={{ fontSize: "8pt" }}>X.&nbsp;&nbsp;MINAT BEKERJA</strong>
+      {/* ══ SECTION IX — MINAT BEKERJA ════════════════════════════════════════ */}
+      <div style={{ border: "1.5px solid #000", marginBottom: "3px" }}>
+        <div style={{ background: "#d1d5db", borderBottom: "1px solid #000", padding: "2px 6px", display: "flex", alignItems: "center" }}>
+          <strong style={{ fontSize: "8pt", lineHeight: "1.2", display: "block" }}>IX.&nbsp;&nbsp;MINAT BEKERJA</strong>
         </div>
 
-        <div style={{ padding: "5px 6px" }}>
+        <div style={{ padding: "4px 6px" }}>
           {/* Sub-judul pilihan departemen */}
-          <div style={{ marginBottom: "4px" }}>
-            <strong style={{ fontSize: "7.5pt" }}>Pilihan Departemen</strong>
+          <div style={{ marginBottom: "2px" }}>
+            <strong style={{ fontSize: "7.5pt", lineHeight: "1.2" }}>Pilihan Departemen yang Diminati</strong>
             <span style={{ fontSize: "6.5pt", color: "#555", marginLeft: "6px" }}>
-              (beri tanda ✓ pada departemen yang diminati — maks. 2 pilihan)
+              (beri tanda ✓ pada departemen yang diminati — maksimal 2 pilihan prioritas)
             </span>
           </div>
 
@@ -327,11 +270,12 @@ export default function PrintLayoutPage4({
           <div style={{
             display: "grid",
             gridTemplateColumns: "repeat(5, 1fr)",
-            gap: "3px 8px",
-            marginBottom: "8px",
-            border: "1px solid #ddd",
-            padding: "5px 6px",
+            gap: "2px 6px",
+            marginBottom: "4px",
+            border: "1px solid #000",
+            padding: "3px 5px",
             background: "#fafafa",
+            boxSizing: "border-box",
           }}>
             {SEMUA_DEPARTEMEN.map((dept) => (
               <DeptCheckbox
@@ -344,17 +288,17 @@ export default function PrintLayoutPage4({
 
           {/* Keterangan departemen yang dipilih */}
           {(minatDepartemen.departemenPertama || minatDepartemen.departemenKedua) && (
-            <div style={{ fontSize: "6.5pt", color: "#444", marginBottom: "6px", fontStyle: "italic" }}>
-              Pilihan 1: <strong>{minatDepartemen.departemenPertama || "-"}</strong>
-              &nbsp;&nbsp;·&nbsp;&nbsp;
-              Pilihan 2: <strong>{minatDepartemen.departemenKedua || "-"}</strong>
+            <div style={{ fontSize: "6.8pt", color: "#222", marginBottom: "3px", background: "#f3f4f6", padding: "1.5px 5px", border: "0.5px solid #ccc" }}>
+              Prioritas 1: <strong>{minatDepartemen.departemenPertama || "-"}</strong>
+              &nbsp;&nbsp;&nbsp;&nbsp;&middot;&nbsp;&nbsp;&nbsp;&nbsp;
+              Prioritas 2: <strong>{minatDepartemen.departemenKedua || "-"}</strong>
             </div>
           )}
 
-          {/* Garis isian */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+          {/* Garis isian form minat bekerja */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "1px" }}>
             <IsianRow
-              label="Posisi yang Dilamar"
+              label="Posisi / Jabatan yang Dilamar"
               value={minatDepartemen.posisiDilamar}
             />
             <IsianRow
@@ -362,79 +306,71 @@ export default function PrintLayoutPage4({
               extraLines={1}
             />
             <IsianRow
-              label="Ekspektasi Gaji / Bulan"
+              label="Ekspektasi Gaji / Penghasilan per Bulan"
               value={minatDepartemen.gajiDiharapkan}
             />
             <IsianRow
-              label="Bersedia Sistem Shift"
+              label="Bersedia Bekerja dengan Sistem Shift"
               value={boolToText(persetujuan.bersediaSistemShift)}
-              labelWidth="52mm"
             />
             <IsianRow
-              label="Bersedia Penempatan Luar Kota"
+              label="Bersedia Ditugaskan / Penempatan Luar Kota"
               value={boolToText(persetujuan.bersediaPenempatan)}
-              labelWidth="52mm"
             />
             <IsianRow
-              label="Menyetujui Gaji Standar Perusahaan"
+              label="Menyetujui Standar Remunerasi & Gaji Perusahaan"
               value={boolToText(persetujuan.menyetujuiGajiStandar)}
-              labelWidth="52mm"
+            />
+            <IsianRow
+              label="Kesiapan / Kapan Dapat Mulai Bekerja"
+              value="Segera / Setelah proses rekrutmen selesai"
             />
           </div>
         </div>
       </div>
 
-      {/* ══ SECTION XI — PERNYATAAN ══════════════════════════════════════════ */}
-      <div style={{ border: "2px solid #000" }}>
-        <div style={{ background: "#d1d5db", borderBottom: "2px solid #000", padding: "2px 6px" }}>
-          <strong style={{ fontSize: "8pt" }}>XI.&nbsp;&nbsp;PERNYATAAN</strong>
+      {/* ══ SECTION X — PERNYATAAN & PERSETUJUAN ══════════════════════════════ */}
+      <div style={{ border: "1.5px solid #000", marginBottom: "3px" }}>
+        <div style={{ background: "#d1d5db", borderBottom: "1px solid #000", padding: "2px 6px", display: "flex", alignItems: "center" }}>
+          <strong style={{ fontSize: "8pt", lineHeight: "1.2", display: "block" }}>X.&nbsp;&nbsp;PERNYATAAN &amp; PERSETUJUAN PELAMAR</strong>
         </div>
 
-        <div style={{ padding: "7px 10px" }}>
-          {/* Paragraf persetujuan — center, italic */}
+        <div style={{ padding: "4px 6px" }}>
+          {/* Paragraf persetujuan */}
           <p style={{
-            fontSize: "7.5pt",
-            lineHeight: 1.7,
-            textAlign: "center",
-            fontStyle: "italic",
-            margin: "0 10mm 10px",
-            color: "#222",
+            fontSize: "6.8pt",
+            lineHeight: "1.35",
+            textAlign: "justify",
+            margin: "0 0 4px 0",
+            color: "#111",
           }}>
-            Dengan ini saya menyatakan bahwa seluruh keterangan yang saya berikan di atas
-            adalah <strong>BENAR</strong> dan dapat dipertanggungjawabkan. Apabila dikemudian
-            hari ditemukan ketidaksesuaian informasi, saya bersedia menerima konsekuensi
-            sesuai dengan peraturan perusahaan yang berlaku.
+            Dengan ini saya menyatakan dengan sesungguhnya bahwa seluruh data, keterangan, dan dokumen yang saya berikan
+            dalam berkas formulir lamaran kerja ini adalah <strong>BENAR, LENGKAP, dan DAPAT DIPERTANGGUNGJAWABKAN</strong>.
+            Saya bersedia memberikan izin kepada PT Adiprima Suraprinta untuk melakukan verifikasi referensi kerja dan latar belakang.
+            Apabila di kemudian hari ditemukan adanya ketidakbenaran atau pemalsuan data, maka saya bersedia menerima sanksi
+            pembatalan proses seleksi atau pemutusan hubungan kerja (PHK) tanpa syarat apapun sesuai hukum dan peraturan yang berlaku.
           </p>
 
-          {/* Tanda tangan — pojok kanan */}
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            <div style={{ textAlign: "center", minWidth: "60mm" }}>
-              {/* Tanggal */}
-              <div style={{ fontSize: "7.5pt", marginBottom: "2px" }}>
-                Sidoarjo,{" "}
-                <span style={{
-                  borderBottom: "1px solid #000",
-                  display: "inline-block",
-                  minWidth: "30mm",
-                  paddingBottom: "1px",
-                }}>
-                  {today}
-                </span>
+          {/* Tanda tangan pelamar */}
+          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "1px" }}>
+            <div style={{ textAlign: "center", minWidth: "50mm" }}>
+              <div style={{ fontSize: "6.8pt", marginBottom: "1px", lineHeight: "1.2" }}>
+                Sidoarjo, {today}
               </div>
-
-              {/* Label posisi penanda tangan */}
-              <div style={{ fontSize: "7.5pt", marginBottom: finalSignature?.startsWith("data:image/") ? "2mm" : "12mm" }}>
-                Yang membuat pernyataan,
+              <div style={{ fontSize: "6.8pt", fontWeight: "bold", marginBottom: "1px", lineHeight: "1.2" }}>
+                Yang Membuat Pernyataan,
               </div>
 
               {/* Tanda tangan digital (Image Canvas / Text) */}
               {finalSignature ? (
                 finalSignature.startsWith("data:image/") ? (
                   <div
-                    className="flex items-end justify-center"
                     style={{
-                      minHeight: "15mm",
-                      height: "15mm",
+                      minHeight: "12mm",
+                      height: "12mm",
+                      display: "flex",
+                      alignItems: "flex-end",
+                      justifyContent: "center",
                       borderBottom: "1px solid #000",
                       paddingBottom: "1px",
                       marginBottom: "2px",
@@ -444,19 +380,22 @@ export default function PrintLayoutPage4({
                     <img
                       src={finalSignature}
                       alt="Tanda Tangan Pelamar"
-                      className="h-14 max-h-16 w-auto max-w-[50mm] object-contain mx-auto block"
-                      style={{ maxHeight: "14mm", maxWidth: "48mm", objectFit: "contain", display: "block" }}
+                      style={{ maxHeight: "11mm", maxWidth: "45mm", objectFit: "contain", display: "block" }}
                     />
                   </div>
                 ) : (
                   <div
                     style={{
-                      fontSize: "8pt",
+                      fontSize: "7.5pt",
                       fontStyle: "italic",
                       fontFamily: "Georgia, serif",
                       letterSpacing: "0.05em",
+                      height: "12mm",
+                      display: "flex",
+                      alignItems: "flex-end",
+                      justifyContent: "center",
                       borderBottom: "1px solid #000",
-                      paddingBottom: "2px",
+                      paddingBottom: "1px",
                       marginBottom: "2px",
                     }}
                   >
@@ -464,45 +403,118 @@ export default function PrintLayoutPage4({
                   </div>
                 )
               ) : (
-                <div style={{ borderBottom: "1px solid #000", height: "15mm", marginBottom: "2px" }} />
+                <div style={{ borderBottom: "1px solid #000", height: "12mm", marginBottom: "2px" }} />
               )}
 
               {/* Nama dalam kurung */}
-              <div style={{ fontSize: "7pt" }}>
-                ({namaLengkap || "\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0"})
+              <div style={{ fontSize: "7pt", fontWeight: "bold", lineHeight: "1.2" }}>
+                ({namaLengkap || "________________________________"})
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── Validasi HRD (baris bawah) ────────────────────────────────────── */}
+      {/* ══ SECTION XI — CATATAN & EVALUASI DEPARTEMEN HRD ════════════════════ */}
+      <div style={{ border: "1.5px solid #000" }}>
+        <div style={{ background: "#d1d5db", borderBottom: "1px solid #000", padding: "2px 6px", display: "flex", alignItems: "center" }}>
+          <strong style={{ fontSize: "8pt", lineHeight: "1.2", display: "block" }}>XI.&nbsp;&nbsp;CATATAN &amp; EVALUASI DEPARTEMEN HRD / USER</strong>
+          <span style={{ fontSize: "6.5pt", fontStyle: "italic", marginLeft: "6px", color: "#555" }}>
+            (Diisi oleh Tim Pewawancara / HRD)
+          </span>
+        </div>
+
+        <div style={{ padding: "3px 5px" }}>
+          {/* Tabel Evaluasi Ringkas */}
+          <table style={{ width: "100%", tableLayout: "fixed", borderCollapse: "separate", borderSpacing: 0, marginBottom: "3px", fontSize: "6.8pt" }}>
+            <thead>
+              <tr style={{ background: "#f3f4f6" }}>
+                <th style={{ border: "1px solid #000", padding: "3px 4px", width: "42mm", textAlign: "left", lineHeight: "1.3", verticalAlign: "middle" }}>
+                  <div style={{ lineHeight: "1.3", padding: "1px 0" }}>Aspek Evaluasi</div>
+                </th>
+                <th style={{ border: "1px solid #000", borderLeft: "none", padding: "3px 2px", width: "14mm", textAlign: "center", lineHeight: "1.3", verticalAlign: "middle" }}>
+                  <div style={{ lineHeight: "1.3", padding: "1px 0" }}>Kurang</div>
+                </th>
+                <th style={{ border: "1px solid #000", borderLeft: "none", padding: "3px 2px", width: "14mm", textAlign: "center", lineHeight: "1.3", verticalAlign: "middle" }}>
+                  <div style={{ lineHeight: "1.3", padding: "1px 0" }}>Cukup</div>
+                </th>
+                <th style={{ border: "1px solid #000", borderLeft: "none", padding: "3px 2px", width: "14mm", textAlign: "center", lineHeight: "1.3", verticalAlign: "middle" }}>
+                  <div style={{ lineHeight: "1.3", padding: "1px 0" }}>Baik</div>
+                </th>
+                <th style={{ border: "1px solid #000", borderLeft: "none", padding: "3px 4px", textAlign: "left", lineHeight: "1.3", verticalAlign: "middle" }}>
+                  <div style={{ lineHeight: "1.3", padding: "1px 0" }}>Catatan Tambahan</div>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {["1. Kesesuaian Kualifikasi & Pendidikan", "2. Pengalaman Kerja & Keterampilan Teknis", "3. Sikap, Motivasi & Komunikasi", "4. Kemampuan Kerjasama Tim & Kepemimpinan"].map((aspek) => (
+                <tr key={aspek}>
+                  <td style={{ border: "1px solid #000", borderTop: "none", padding: "2.5px 4px", verticalAlign: "middle" }}>
+                    <div style={{ lineHeight: "1.3", padding: "1px 0" }}>{aspek}</div>
+                  </td>
+                  <td style={{ border: "1px solid #000", borderTop: "none", borderLeft: "none", textAlign: "center", verticalAlign: "middle", padding: "2.5px 0" }}>□</td>
+                  <td style={{ border: "1px solid #000", borderTop: "none", borderLeft: "none", textAlign: "center", verticalAlign: "middle", padding: "2.5px 0" }}>□</td>
+                  <td style={{ border: "1px solid #000", borderTop: "none", borderLeft: "none", textAlign: "center", verticalAlign: "middle", padding: "2.5px 0" }}>□</td>
+                  <td style={{ border: "1px solid #000", borderTop: "none", borderLeft: "none", padding: "2.5px 4px", verticalAlign: "middle" }}>&nbsp;</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* Hasil Rekomendasi Seleksi */}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", fontSize: "6.8pt", marginBottom: "3px", padding: "1.5px 4px", background: "#fafafa", border: "1px solid #ddd" }}>
+            <span style={{ fontWeight: "bold" }}>Kesimpulan Rekomendasi:</span>
+            <span>□ Disarankan / Diterima</span>
+            <span>□ Dipertimbangkan (Cadangan)</span>
+            <span>□ Tidak Memenuhi Kualifikasi</span>
+          </div>
+
+          {/* Area Tanda Tangan Verifikasi HRD */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "3mm", marginTop: "1px" }}>
+            <div style={{ textAlign: "center", border: "1px solid #ccc", padding: "2px" }}>
+              <div style={{ fontSize: "6pt", color: "#555", lineHeight: "1.2" }}>Pewawancara 1 (User / Dept)</div>
+              <div style={{ height: "9mm" }} />
+              <div style={{ borderTop: "1px solid #000", fontSize: "6pt", paddingTop: "1px", lineHeight: "1.2" }}>
+                (_____________________)
+              </div>
+            </div>
+
+            <div style={{ textAlign: "center", border: "1px solid #ccc", padding: "2px" }}>
+              <div style={{ fontSize: "6pt", color: "#555", lineHeight: "1.2" }}>Pewawancara 2 (HRD)</div>
+              <div style={{ height: "9mm" }} />
+              <div style={{ borderTop: "1px solid #000", fontSize: "6pt", paddingTop: "1px", lineHeight: "1.2" }}>
+                (_____________________)
+              </div>
+            </div>
+
+            <div style={{ textAlign: "center", border: "1px solid #ccc", padding: "2px" }}>
+              <div style={{ fontSize: "6pt", color: "#555", lineHeight: "1.2" }}>Menyetujui (HRD Manager)</div>
+              <div style={{ height: "9mm" }} />
+              <div style={{ borderTop: "1px solid #000", fontSize: "6pt", paddingTop: "1px", lineHeight: "1.2" }}>
+                (_____________________)
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Footer Dokumen ─────────────────────────────────────────────────── */}
       <div style={{
-        marginTop: "4mm",
-        borderTop: "1px solid #ccc",
-        paddingTop: "3px",
+        marginTop: "2mm",
         display: "flex",
         justifyContent: "space-between",
-        alignItems: "flex-end",
-        fontSize: "6.5pt",
-        color: "#555",
+        alignItems: "center",
+        fontSize: "6pt",
+        color: "#666",
       }}>
-        <div>
-          <div style={{ fontStyle: "italic" }}>Diterima oleh Dept. HRD:</div>
-          <div style={{ marginTop: "8mm", borderTop: "1px solid #000", paddingTop: "2px", minWidth: "50mm" }}>
-            (________________________________)
-          </div>
-          <div>Nama &amp; Tanggal</div>
+        <div style={{ fontStyle: "italic" }}>
+          Dokumen Resmi PT Adiprima Suraprinta &middot; Departemen HRD &amp; Personalia
         </div>
         <div style={{ textAlign: "right" }}>
-          <div style={{ marginBottom: "2px" }}>
-            Halaman 4 / 4 &nbsp;&middot;&nbsp; {noForm} &nbsp;&middot;&nbsp; Rev. {noRevisi}
-          </div>
-          <div style={{ fontSize: "5.5pt", color: "#999" }}>
-            Formulir ini adalah dokumen resmi PT Adiprima Suraprinta — Dept. HRD
-          </div>
+          Halaman 4 / 4 &nbsp;&middot;&nbsp; {noForm} &nbsp;&middot;&nbsp; Rev. {noRevisi}
         </div>
       </div>
     </div>
   );
 }
+
