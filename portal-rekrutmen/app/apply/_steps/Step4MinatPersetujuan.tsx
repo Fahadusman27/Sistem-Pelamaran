@@ -64,8 +64,8 @@ export default function Step4MinatPersetujuan({ onBack, onSubmitFinal }: Props) 
   const { register, handleSubmit, control, setValue, formState: { errors } } = useForm<MinatPersetujuanFormData>({
     resolver: zodResolver(minatPersetujuanSchema),
     defaultValues: {
-      departemenPertama: (minatDepartemen.departemenPertama as any) || undefined,
-      departemenKedua:   (minatDepartemen.departemenKedua as any)   || undefined,
+      departemenPertama: (minatDepartemen.departemenPertama as MinatPersetujuanFormData["departemenPertama"]) || undefined,
+      departemenKedua:   (minatDepartemen.departemenKedua as MinatPersetujuanFormData["departemenKedua"]) || undefined,
       posisiDilamar:     minatDepartemen.posisiDilamar || "",
       gajiDiharapkan:    minatDepartemen.gajiDiharapkan || "",
       bersediaSistemShift:       persetujuan.bersediaSistemShift   ?? undefined,
@@ -79,7 +79,7 @@ export default function Step4MinatPersetujuan({ onBack, onSubmitFinal }: Props) 
   // Sinkronisasi otomatis jika nilai departemen & posisi berubah dari store
   useEffect(() => {
     if (minatDepartemen.departemenPertama) {
-      setValue("departemenPertama", minatDepartemen.departemenPertama as any, { shouldValidate: true });
+      setValue("departemenPertama", minatDepartemen.departemenPertama as MinatPersetujuanFormData["departemenPertama"], { shouldValidate: true });
     }
     if (minatDepartemen.posisiDilamar) {
       setValue("posisiDilamar", minatDepartemen.posisiDilamar, { shouldValidate: true });
